@@ -1,88 +1,158 @@
-const Engine = Matter.Engine;
-const World = Matter.World;
-const Bodies = Matter.Bodies;
-const Body = Matter.Body;
+
+// let Engine = Matter.Engine,
+//     World = Matter.World,
+//     Events = Matter.Events,
+//     Bodies = Matter.Bodies;
+
+// let engine;
+// let world;
+// let particles = [];
+
+
+// function setup() {
+//   createCanvas(innerWidth, innerHeight);
+//     background(200);
+
+//     engine = Engine.create();
+//     world = engine.world;
+//     world.gravity.y = 1;
+
+//     // let p = new Particle(300, 50, 50);
+//     // particles.push(p);
+//     for(let i = 0;i<800;i++){
+//         let p = new Particle(random(width), random(height),6);
+//         p.restitution =1;
+//         p.friction=1;
+//         particles.push(p);
+//     }
+    
+
+//     let floor = Bodies.rectangle(width/2,height+10,width,20,{isStatic: true});
+//     let ceiling = Bodies.rectangle(width/2,-10,width,20,{isStatic: true});
+//     let left = Bodies.rectangle(-10,height/2,20,height,{isStatic: true});
+//     let right = Bodies.rectangle(width +10,height/2,20,height,{isStatic: true});
+//     let shape = Bodies.circle(width/2,height/2,width/6,{isStatic: true});
+//     floor.restitution=1;
+//     ceiling.restitution=1;
+//     left.restitution=1;
+//     right.restitution=1;
+//     shape.friction=1;
+//     World.add(world, [floor, left, ceiling, right,shape]);
+
+// }
+// function draw() {
+//     colorMode(RGB, 255);
+//     background(30);
+//     for(let p of particles){
+//         p.show();
+//     }
+
+//     world.gravity.y = (Math.round(sin(frameCount/100))*.15);
+//     world.gravity.x = (Math.round(cos(frameCount/100))*.15);
+//     // world.gravity.x = ((cos(frameCount/50))*.150);
+//     // world.gravity.y = ((sin(frameCount/50))*.150);
+
+//     Engine.update(engine);
+// }
+
+// class Particle {
+//     constructor(x,y,r){
+//         this.body = Bodies.circle(x,y,r);
+//         this.body.restitution=1;
+
+//         World.add(world, this.body);
+//         this.r = r;
+//     }
+//     show(hue){
+        
+//         colorMode(HSB, 100);
+//         fill(6,(Math.pow(this.body.speed,6)),100);
+//         stroke(220);
+//         noStroke();
+//         let pos = this.body.position;
+//         push();
+//         translate(pos.x ,pos.y);
+//         circle(10,0,this.r*0.8);
+//         pop();
+//     }
+// }
+
+
+
+
+let Engine = Matter.Engine,
+    World = Matter.World,
+    Events = Matter.Events,
+    Bodies = Matter.Bodies;
 
 let engine;
-let words = [];
-let group, wallLeft, wallRight;
-let wordsToDisplay = [
-    "discord.js",
-    "react.js",
-    "next.js",
-    "node.js",
-    "mongo.js",
-    "gsap.js"
-];
+let world;
+let particles = [];
+let shape;
 
 function setup() {
-    createCanvas(innerWidth, innerHeight - 5);
-    
+    createCanvas(innerWidth, innerHeight);
+    background(200);
+
     engine = Engine.create();
+    world = engine.world;
+    world.gravity.y = 1;
 
-    group = Bodies.rectangle(width / 2, height - 20, width, 10, {
-        isStatic: true,
-    });
-    wallLeft = Bodies.rectangle(0, height / 2, 10, height, {
-        isStatic: true,
-    });
-    wallRight = Bodies.rectangle(width, height / 2, 10, height, {
-        isStatic: true,
-    });
-
-    World.add(engine.world, [group, wallLeft, wallRight]);
-
-    for (let i = 0; i < wordsToDisplay.length; i++) {
-        words.push(new Word(random(width), -200, wordsToDisplay[i]));
-    }
+    let floor = Bodies.rectangle(width / 2, height + 10, width, 20, { isStatic: true });
+    let ceiling = Bodies.rectangle(width / 2, -10, width, 20, { isStatic: true });
+    let left = Bodies.rectangle(-10, height / 2, 20, height, { isStatic: true });
+    let right = Bodies.rectangle(width + 10, height / 2, 20, height, { isStatic: true });
+    shape = Bodies.circle(width / 2, height / 2, width / 6, { isStatic: false });
+    floor.restitution = 1;
+    ceiling.restitution = 1;
+    left.restitution = 1;
+    right.restitution = 1;
+    shape.friction = 1;
+    World.add(world, [floor, left, ceiling, right, shape]);
 }
 
 function draw() {
-    background("#ffff60");
+    colorMode(RGB, 255);
+    background(30);
+
+    // Update the position of the shape based on the mouse movement
+    shape.position.x = mouseX;
+    shape.position.y = mouseY;
+
+    for (let p of particles) {
+        p.show();
+    }
+
+    world.gravity.y = (Math.round(sin(frameCount / 100)) * 0.15);
+    world.gravity.x = (Math.round(cos(frameCount / 100)) * 0.15);
+
     Engine.update(engine);
-    for (let word of words) {
-        word.show();
+}
+
+function mousePressed() {
+    for (let i = 0; i < 10; i++) {
+        let p = new Particle(random(width), random(height), 6);
+        particles.push(p);
     }
 }
 
-class Word {
-    constructor(x, y, word) {
-        this.body = Bodies.rectangle(x, y, word.length * 20, 40);
-        this.word = word;
-        World.add(engine.world, this.body);
+class Particle {
+    constructor(x, y, r) {
+        this.body = Bodies.circle(x, y, r, { restitution: 0.9 });
+        World.add(world, this.body);
+        this.r = r;
     }
 
     show() {
+        colorMode(HSB, 100);
+        fill(6, (Math.pow(this.body.speed, 6)), 100);
+        stroke(220);
+        noStroke();
         let pos = this.body.position;
-        let angle = this.body.angle;
 
         push();
         translate(pos.x, pos.y);
-        rotate(angle);
-
-        rectMode(CENTER);
-        fill(255);
-        stroke("#111222");
-        strokeWeight(3);
-        rect(0, 0, this.word.length * 20, 40);
-        noStroke();
-        fill("#0f0f0f");
-        textAlign(CENTER, CENTER);
-        text(this.word.toUpperCase(), 0, 0);
-
+        circle(10, 0, this.r * 0.8);
         pop();
-    }
-}
-
-function mouseMoved() {
-    for (let word of words) {
-        let distance = dist(mouseX, mouseY, word.body.position.x, word.body.position.y);
-        if (distance < 100) {
-            Body.applyForce(
-                word.body,
-                { x: word.body.position.x, y: word.body.position.y },
-                { x: random(-0.2, 0.2), y: random(-0.2, 0.2) }
-            );
-        }
     }
 }
